@@ -1,0 +1,24 @@
+{
+  "name": "miniegg-plus",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:ainft-team/miniegg-plus.git",
+  "author": "liayoo <lia@comcom.ai>",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack --mode=production --node-env=production",
+    "build:dev": "webpack --mode=development",
+    "build:prod": "webpack --mode=production --node-env=production",
+    "watch": "s=$(npx kaluma list | grep \"Raspberry Pi\" | cut -d \" \" -f1) && screen $s 115200",
+    "upload": "npm run build && s=$(npx kaluma list | grep \"Raspberry Pi\" | cut -d \" \" -f1) && npx kaluma write dist/main.js -p $s",
+    "test": "webpack --mode=development && s=$(npx kaluma list | grep \"Raspberry Pi\" | cut -d \" \" -f1) && TEST=true npm run build:dev && npx kaluma write dist/main.js -p $s && screen $s 115200"
+  },
+  "dependencies": {
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "@kaluma/cli": "1.0.0",
+    "webpack": "^5.73.0",
+    "webpack-cli": "^4.9.2"
+  }
+}

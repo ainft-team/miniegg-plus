@@ -1,0 +1,42 @@
+{
+    "A01": {
+        "rhythm": 4,
+        "tempo": 160,
+        "data": "4edc.fed.edc.fed."
+    },
+    "A02": {
+        "rhythm": 4,
+        "tempo": 160,
+        "data":"3a4fed3A4fed3a4fed3A4fed"
+    },
+    "K01": {
+        "rhythm": 8,
+        "tempo": 120,
+        "data": "3ea4ceedcDcDce--c3e--..defgfede--.."
+    },
+    "K02": {
+        "rhythm": 8,
+        "tempo": 180,
+        "data": "3a-a-a-a-a-a-a-a-b4cdc3bG"
+    },
+    "R01": {
+        "rhythm": 4,
+        "tempo": 160,
+        "data": "4cegfe.efagf.egbag.fa5c4ba."
+    },
+    "R02": {
+        "rhythm": 4,
+        "tempo": 160,
+        "data": "4cgecd.3g4d3bga."
+    },
+    "S01": {
+        "rhythm": 4,
+        "tempo": 160,
+        "data": "3gab4c3abg.ab4cd3b4c3a."
+    },
+    "S02": {
+        "rhythm": 4,
+        "tempo": 120,
+        "data": "3A4fDCcCDc3AG..A4fDCcCD....."
+    }
+}
