@@ -1,4 +1,4 @@
-# miniegg-plus
+# miniegg-plus-device
 MiniEgg is Comcomm's own NFT that can be hatched into other NFTs. MiniEgg Plus is a project that interacts with the Blockchain to allow this Miniegg NFT to grow through games.
 
 ## Prerequisite
@@ -9,8 +9,8 @@ MiniEgg is Comcomm's own NFT that can be hatched into other NFTs. MiniEgg Plus i
 
 1. Clone this repository and then go into the folder.
 ```bash
-git clone git@github.com:ainft-team/miniegg-plus.git
-cd miniegg-plus
+git clone git@github.com:ainft-team/miniegg-plus-device.git
+cd miniegg-plus-device
 ```
 2. Install dependencies.
 ```bash

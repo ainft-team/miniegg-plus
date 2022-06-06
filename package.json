@@ -1,8 +1,8 @@
 {
-  "name": "miniegg-plus",
+  "name": "miniegg-plus-device",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "git@github.com:ainft-team/miniegg-plus.git",
+  "repository": "git@github.com:ainft-team/miniegg-plus-device.git",
   "author": "AINFT Team",
   "contributors": [
     {
