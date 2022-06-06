@@ -20,31 +20,31 @@ yarn
 ## Usage
 ### Build
 - Development mode
-```bash
+```
 npm run build:dev
 ```
 - Production mode
-```bash
+```
 npm run build
 ```
 
 The default build target file is 'src/index.js'. If you want to build other file,
-```bash
+```
 FILE_PATH=<file_path> npm run build
 ```
 
 ### Upload scripts
-```bash
-bash upload.sh {local|dev|prod} [<filePath>]
+```
+sh upload.sh {local|dev|prod} [<filePath>]
 ```
 
 ### Reset / set Wi-Fi
-1. Connect MiniEgg+ device to your computer
+1. Connect a MiniEgg+ device to your computer
 2. Run the wifi resetting script. Note that if you set testSSID and testPWD in `src/settings/reset-wifi.js` to the actual wi-fi you want to use, it will connect to it after the uploads. If you set them to dummy values, it will not be able to connect to a wi-fi and take you to the wi-fi setting screen.
-```bash
-bash scripts/upload.sh dev src/settings/reset-wifi.js
+```
+sh scripts/upload.sh prod src/settings/reset-wifi.js
 ```
 3. Run the device setting script
-```bash
-bash scripts/upload.sh dev
+```
+sh scripts/upload.sh prod
 ```
