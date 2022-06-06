@@ -3,7 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:ainft-team/miniegg-plus.git",
-  "author": "liayoo <lia@comcom.ai>",
+  "author": "AINFT Team",
+  "contributors": [
+    {
+      "name": "Doheun Kim",
+      "url": "https://github.com/ehgmsdk20"
+    },
+    {
+      "name": "liayoo",
+      "url": "https://github.com/liayoo"
+    }
+  ],
   "license": "MIT",
   "scripts": {
     "build": "webpack --mode=production --node-env=production",
