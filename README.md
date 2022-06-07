@@ -1,9 +1,11 @@
 # miniegg-plus-device
-MiniEgg is Comcomm's own NFT that can be hatched into other NFTs. MiniEgg Plus is a project that interacts with the Blockchain to allow this Miniegg NFT to grow through games.
+MiniEgg is Comcomm's own NFT that can be hatched into other NFTs. MiniEgg+ is a project that interacts with the Blockchain to allow this Miniegg NFT to grow through games. MiniEgg+ is currently a [RP2040 (Raspberry Pi Pico)](https://www.raspberrypi.com/products/raspberry-pi-pico/), but you can upgrade the spec if you'd like.
 
 ## Prerequisite
 - Node version: v14.17.6+
 - NPM version: v6.14.15+
+- MiniEgg+ version: v1.1.0
+- Kaluma version: [v1.0.0](https://github.com/kaluma-project/kaluma/releases/tag/1.0.0)
 
 ## Installation
 
