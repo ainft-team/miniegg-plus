@@ -1,5 +1,5 @@
 const constants = {
-  VERSION: '1.0.0',
+  VERSION: process.env.npm_package_version,
   MAX_FPS: 16, // frame per second
   DEBOUNCE_TIME: 10, // debounce time for button
   HEART_CHARGING_TIME: 14400, //4 hours in sec
