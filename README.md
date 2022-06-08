@@ -5,7 +5,7 @@ MiniEgg is Comcomm's own NFT that can be hatched into other NFTs. MiniEgg+ is a 
 - Node version: v14.17.6+
 - NPM version: v6.14.15+
 - MiniEgg+ version: v1.1.0
-- Kaluma version: [v1.0.0](https://github.com/kaluma-project/kaluma/releases/tag/1.0.0)
+- Kaluma version: [v1.0.0-beta.13](https://github.com/kaluma-project/kaluma/releases/tag/1.0.0-beta.13)
 
 ## Installation
 
