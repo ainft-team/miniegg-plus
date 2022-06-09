@@ -2,7 +2,6 @@ const { Input, Speaker, Gamejoy } = require('./init');
 const utils = require('./utils');
 const { constants } = require('./constants');
 const rtc = require('rtc');
-const font = require('font-minimal');
 const { BuzzerMusic } = require('buzzer-music');
 const fs = require('fs');
 
@@ -30,7 +29,7 @@ if (process.env.TEST) {
 class GameScene extends Gamejoy {
     init() {
         super.init();
-        this.gc.setFont(font);
+        this.gc.setFont(null);
         this.gc.setFontScale(1, 1);
         this.gc.setFontColor(this.gc.color16(0, 0, 0));
         this.pressed = 0;
@@ -248,10 +247,7 @@ class GameScene extends Gamejoy {
             this.next = this.menuScene;
         } else if (this.scene === 'info') {
             this.pressed = 3;
-            this.next = () => {
-                this.menuScene();
-                this.gc.setFont(font);
-            };
+            this.next = this.menuScene;
         } else if (this.scene === 'otp') {
             this.pressed = 3;
             this.next = this.infoScene;
@@ -295,7 +291,7 @@ class GameScene extends Gamejoy {
                 },
                 data,
             }),
-            headers: { 'content-type': 'application/json' },
+            headers: { 'content-type': 'application/json', 'version': constants.VERSION },
         });
         this.nonce++;
         if (res.status !== constants.STATUS_CODE.SUCCESS) {
@@ -325,13 +321,25 @@ class GameScene extends Gamejoy {
         }
     };
 
+    checkVersion = async () => {
+        this.showFunction = () => this.loading('CHECKING VERSION...');
+        const res = await esp.http(`http://${process.env.API_SERVER}/getVersion`);
+        if (res.status !== constants.STATUS_CODE.SUCCESS) {
+            throw res.status;
+        }
+        const releasedVersion = JSON.parse(res.body).version;
+        if(releasedVersion !== constants.VERSION) {
+            this.errorScene(`CURRENT VERSION: ${constants.VERSION}\n RELEASED VERSION: ${releasedVersion}\n \n PLEASE UPDATE THE SOFTWARE!`);
+            return false;
+        }
+        return true;
+    };
+
     getNFTList = async () => {
-        delay(500);
         this.showFunction = () => this.loading('LOADING YOUR NFT... (1/2)');
         const ids = JSON.parse(
             await this.sendEncryptedRequest(`http://${process.env.API_SERVER}/egg/getIds`)
         ).ids;
-        delay(500);
         if (!ids || ids.length === 0) {
             throw constants.STATUS_CODE.NOT_EXIST;
         }
@@ -339,7 +347,6 @@ class GameScene extends Gamejoy {
     };
 
     loadNFT = async () => {
-        delay(500);
         this.showFunction = () => this.loading('LOADING YOUR NFT... (2/2)');
 
         const eggInfo = JSON.parse(
@@ -347,7 +354,6 @@ class GameScene extends Gamejoy {
                 id: this.eggNum,
             })
         ).eggInfo;
-        delay(500);
         this.eggData = eggInfo.image.compressBase64;
         EggTop.width = EggBottom.width = eggInfo.image.width;
         EggTop.height = Math.floor((eggInfo.image.height * 16) / 29);
@@ -386,7 +392,7 @@ class GameScene extends Gamejoy {
                     serialNumber: this.serial,
                 },
             }),
-            headers: { 'content-type': 'application/json' },
+            headers: { 'content-type': 'application/json', 'version': constants.VERSION },
         });
         return parseInt(JSON.parse(res.body).nonce) + 1;
     };
@@ -400,6 +406,12 @@ class GameScene extends Gamejoy {
                 this.nonce = await this.getNonce();
                 delay(1000);
             }
+            const isCorrectVersion = await this.checkVersion();
+            if (isCorrectVersion) {
+                delay(1000);
+            } else {
+                delay(3000);
+            }
             await this.getNFTList();
             delay(1000);
             await this.loadNFT();
@@ -407,7 +419,6 @@ class GameScene extends Gamejoy {
             await this.setRealTime();
             return true;
         } catch (err) {
-            console.log(err);
             this.errorScene(err);
             return false;
         }
@@ -487,11 +498,12 @@ class GameScene extends Gamejoy {
             return;
         }
         this.gc.fillScreen(this.gc.color16(255, 255, 255));
-        const m = this.gc.measureText(text);
-        this.gc.drawText(Math.round((128 - m.width) / 2), 85, text);
+        this.drawLongText(text, this.screenWidth / 2, 80, {lineSpace: 1, width: this.screenWidth - 16, textAlign: "center"});
         const pos = (this.frame / 10) % 3;
         this.gc.setFillColor(this.gc.color16(0, 0, 0));
         this.gc.fillCircle(48 + 16 * pos, 64, 4);
+        const m = this.gc.measureText(`VERSION: ${constants.VERSION}`);
+        this.gc.drawText(Math.round((128 - m.width) / 2), this.screenHeight - m.height - 8, `VERSION: ${constants.VERSION}`);
     }
 
     errorScene(err, height = 85, enableButton = false) {
@@ -500,7 +512,10 @@ class GameScene extends Gamejoy {
         this.gc.setFontColor(this.gc.color16(0, 0, 0));
         this.gc.fillScreen(this.gc.color16(255, 255, 255));
         const text = utils.convertErrorCodeToMessage(err);
-        this.drawLongText(text, 106, this.screenWidth / 2, height);
+        this.drawLongText(text, this.screenWidth / 2, height, {
+            width: this.screenWidth - 16, 
+            textAlign: "center",
+        });
         this.gc.display();
     }
 
@@ -538,7 +553,7 @@ class GameScene extends Gamejoy {
 
     wifiPwdScene() {
         this.scene = 'wifi-pwd';
-        this.showFunction = () => this.showKeyboard('pwd');
+        this.showFunction = () => this.showKeyboard('PWD');
         this.gc.setFontColor(this.gc.color16(0, 0, 0));
         this.keyboardX = 0;
         this.keyboardY = 0;
@@ -550,7 +565,6 @@ class GameScene extends Gamejoy {
         this.scene = 'copyright';
         this.showFunction = () => this.drawCopyRight(12, 110);
         this.frame = 0;
-        this.gc.setFont(null);
     }
 
     drawCopyRight(x, y) {
@@ -580,7 +594,6 @@ class GameScene extends Gamejoy {
         this.angry = false;
         this.stack = 0;
         this.frame = -1;
-        this.gc.setFont(font);
     }
 
     drawHomeScene() {
@@ -632,8 +645,9 @@ class GameScene extends Gamejoy {
         const text = `${this.heart}/${constants.HEART_MAX}  ${
             this.heart === constants.HEART_MAX ? '' : remainedTime
         }`;
-        this.gc.drawText(29, 8, text);
-        this.drawHeart(20, 11, utils.convertStringToColor16('F0003B'));
+        const h = this.gc.measureText(text).height;
+        this.gc.drawText(27, 11 - h / 2, text);
+        this.drawHeart(18, 11, utils.convertStringToColor16('F0003B'));
         this.drawEgg(64, 62, 0, false);
         this.drawBackButton(Input.R, this.screenWidth - 11, 11);
     }
@@ -697,9 +711,11 @@ class GameScene extends Gamejoy {
         this.gc.fillScreen(utils.convertStringToColor16(constants.COLOR[0]));
         this.drawEgg(64, 62, 0, false);
         this.gc.setFillColor(this.gc.color16(255, 255, 255));
-        this.gc.fillRoundRect(14, 54, 100, 60, 2);
+        this.gc.fillRoundRect(8, 54, 112, 60, 2);
         this.gc.setFontColor(this.gc.color16(0, 0, 0));
-        this.drawLongText('The egg woke up from a dream', 80, 64, 64);
+        this.drawLongText('The egg woke up from a dream', 64, 64, {
+            width: 92,
+        });
         this.drawButton(Input.C, 'CHECK THE RESULT', 64, 100);
         this.drawBackButton(Input.R, this.screenWidth - 11, 11);
     }
@@ -739,7 +755,6 @@ class GameScene extends Gamejoy {
     infoScene() {
         this.scene = 'info';
         this.showFunction = this.drawInfoScene;
-        this.gc.setFont(null);
     }
 
     drawInfoScene() {
@@ -747,12 +762,14 @@ class GameScene extends Gamejoy {
         this.gc.setFillColor(this.gc.color16(255, 255, 255));
         this.gc.setFontColor(this.gc.color16(255, 255, 255));
         const exp = this.statR + this.statA + this.statS + this.statK;
-        const text = `PROFILE\n  EGG: No.${this.eggNum}\n  EXP: ${exp}\n  H/W SERIAL:`;
+        const text = `PROFILE\n  EGG: No.${this.eggNum}\n  EXP: ${exp}\n  H/W SERIAL:\n  ${this.serial}`;
         for (let i = 0; i < 3; i += 1) {
             this.gc.fillCircle(14, 41 + i * 16, 1);
         }
-        this.drawLongText(text, 102, this.screenWidth / 2, 22, 8);
-        this.gc.drawText(21, 82, `${this.serial}`);
+        this.drawLongText(text, this.screenWidth / 2, 22, {
+            lineSpace: 8,
+            width: 102,
+        });
         this.drawBackButton(Input.R, this.screenWidth - 11, 11);
         this.drawButton(Input.C, 'GENERATE OTP', this.screenWidth / 2, this.screenHeight - 16);
     }
@@ -779,9 +796,12 @@ class GameScene extends Gamejoy {
             1
         );
         this.gc.setFontColor(this.gc.color16(255, 255, 255));
-        this.drawLongText(this.hash, 102, this.screenWidth / 2, 62, 4);
+        let width = this.gc.measureText(this.hash).width;
+        this.gc.drawText((this.screenWidth - width) / 2, 62, this.hash);
         this.gc.setFontColor(this.gc.color16(255, 0, 0));
-        this.drawLongText(`${60 - Math.floor(rtc.getTime() / 1000) + this.generatedAt * 60}`, 102, this.screenWidth / 2, 74, 4);
+        const secRemain = `${60 - Math.floor(rtc.getTime() / 1000) + this.generatedAt * 60}`;
+        width = this.gc.measureText(secRemain).width;
+        this.gc.drawText((this.screenWidth - width) / 2, 74, secRemain);
         this.drawBackButton(Input.R, this.screenWidth - 11, 11);
     }
 
@@ -789,22 +809,32 @@ class GameScene extends Gamejoy {
 
     // Graphic Utils
     showKeyboard(placeholder) {
+        const defaultM = this.gc.measureText(' ');
+        const margin = 2;
         this.gc.fillScreen(this.gc.color16(255, 255, 255));
+        const width = (defaultM.width + margin) * constants.KEYBOARD[0].length - margin;
+        const height = (defaultM.height + margin) * constants.KEYBOARD.length - margin;
+        const x = (this.screenWidth - width) / 2;
+        const y = 10;
         for (let i = 0; i < constants.KEYBOARD.length; i++) {
-            const text = constants.KEYBOARD[i].split('').join(' ');
-            this.gc.drawText(16, 10 + 10 * i, text);
+            for (let j = 0; j < constants.KEYBOARD[i].length; j++) {
+                this.gc.drawText(x + (defaultM.width + margin) * j, y + (defaultM.height + margin) * i, constants.KEYBOARD[i][j]);
+            }
         }
-        if (this.keyboardY === constants.KEYBOARD.length + 1) {
-            this.gc.drawRect(100, 93, 23, 10);
-        } else if (this.keyboardY === constants.KEYBOARD.length) {
-            this.gc.drawRect(100, 85, 14, 10);
+        const delY = y + height + margin * 2;
+        const enterY = delY + margin + defaultM.height;
+        const inputY =  enterY + 3 * margin + defaultM.height;
+        if (this.keyboardY === constants.KEYBOARD.length + 1) {// Enter
+            this.gc.drawRect(94, enterY - 2, defaultM.width * 5 + 3, defaultM.height + 3);
+        } else if (this.keyboardY === constants.KEYBOARD.length) {// Del
+            this.gc.drawRect(94, delY - 2, defaultM.width * 3 + 3, defaultM.height + 3);
         } else {
-            this.gc.drawRect(14 + 8 * this.keyboardX, 8 + 10 * this.keyboardY, 7, 9);
+            this.gc.drawRect(x + (defaultM.width + margin) * this.keyboardX - 2, y + (defaultM.height + margin) * this.keyboardY - 2, defaultM.width + 3, defaultM.height + 3);
         }
-        this.gc.drawText(6, 95, `${placeholder}:`);
-        this.drawLongText('Del\n Enter', 20, 112, 87);
-        this.gc.drawText(this.gc.measureText(placeholder).width + 16, 95, this.input);
-        this.gc.drawText(21, 110, 'Press B button to erase');
+        this.gc.drawText(6, inputY, `${placeholder}:`);
+        this.gc.drawText(96, enterY, 'Enter');
+        this.gc.drawText(96, delY, 'Del');
+        this.gc.drawText(this.gc.measureText(placeholder).width + 16, inputY, this.input);
     }
 
     showWifis() {
@@ -817,7 +847,7 @@ class GameScene extends Gamejoy {
             }
             this.gc.drawText(16, 20 + 16 * i, this.ssidList[i + this.baseIndex]);
         }
-        const text = 'Select Wi-Fi to connect';
+        const text = 'Select Wi-Fi';
         const m = this.gc.measureText(text);
         this.gc.drawText(Math.round((128 - m.width) / 2), 110, text);
     }
@@ -850,14 +880,15 @@ class GameScene extends Gamejoy {
 
     showBattery = (marginX, marginY) => {
         const color = utils.convertStringToColor16('D8D8D8');
+        let m = this.gc.measureText("100%");
         this.gc.setColor(color);
         this.gc.setFillColor(color);
         this.gc.setFontColor(color);
-        this.gc.drawRoundRect(106 - marginX, marginY, 22, 10, 2);
-        this.gc.fillRect(104 - marginX, 2 + marginY, 2, 6);
+        this.gc.drawRoundRect(this.screenWidth - marginX - m.width - 4, marginY, m.width + 4, m.height + 3, 2);
+        this.gc.fillRect(this.screenWidth - marginX - m.width - 6, marginY + (m.height + 3) / 2 - 3, 2, 6);
         const value = utils.convertVoltToPercent(this.battery.read() * 2 * 3.3) + '%';
-        const m2 = this.gc.measureText(value);
-        this.gc.drawText(126 - m2.width - marginX, 2 + marginY, value);
+        m = this.gc.measureText(value);
+        this.gc.drawText(this.screenWidth - m.width - marginX - 2, marginY + 2, value);
     };
 
     drawBitmapAt = (bitMap, x, y, options) => {
@@ -895,7 +926,7 @@ class GameScene extends Gamejoy {
                 this.gc.drawText(x + 25, y - 27, 'Stop!');
             }
             if (frame > 10) {
-                this.gc.drawText(x - 46, y - 20, 'Stop!');
+                this.gc.drawText(x - 50, y - 20, 'Stop!');
             }
         }
         const diff = EggTop.height - EggBottom.height;
@@ -1026,40 +1057,64 @@ class GameScene extends Gamejoy {
         }
     }
 
-    drawLongText(text, maxWidth, x, y, lineSpace = 2) {
+    drawLongText(text, x, y, option) {
+        const _option = {
+            width: 128,
+            lineSpace: 2,
+            textAlign: "left",
+            ...option
+        }
+        const drawtext = (text, width, y) => {
+            switch (_option.textAlign) {
+                case "center":
+                    this.gc.drawText(x - width / 2, y, text);
+                    break;
+                case "right":
+                    this.gc.drawText(x + _option.width / 2 - width, y, text);
+                    break;
+                default:
+                    this.gc.drawText(x - _option.width / 2, y, text);
+            }
+        }
         let currentWidth = 0;
-        const fontHeight = this.gc.measureText('a').height;
-        const textWidth = this.gc.measureText(text).width;
-        maxWidth = Math.min(textWidth, maxWidth);
+        let tmpText = "";
+        const defaultM = this.gc.measureText(' ');
         text = text.split(' ');
-        x -= maxWidth / 2;
         for (let i = 0; i < text.length; i++) {
-            const width = this.gc.measureText(text[i]).width;
-            if (currentWidth > 0 && currentWidth + width > maxWidth) {
-                y += fontHeight + lineSpace;
+            const textWidth = this.gc.measureText(text[i]).width;
+            if (currentWidth > 0 && currentWidth + textWidth > _option.width) {
+                drawtext(tmpText, currentWidth - defaultM.width, y);
+                y += defaultM.height + _option.lineSpace;
                 currentWidth = 0;
+                tmpText = "";
             }
-            this.gc.drawText(x + currentWidth, y, text[i]);
-            if (text[i].includes('\n')) {
+            currentWidth += textWidth + defaultM.width;
+            tmpText = tmpText + text[i] + " ";
+            
+            if (text[i].charAt(text[i].length - 1) === '\n') {
+                drawtext(tmpText, currentWidth - defaultM.width, y);
+                y += defaultM.height + _option.lineSpace;
                 currentWidth = 0;
-                y += fontHeight + lineSpace;
-            } else {
-                currentWidth += width + this.gc.measureText(' ').width;
+                tmpText = "";
             }
+        }
+        if (tmpText) {
+            drawtext(tmpText, currentWidth - defaultM.width, y);
         }
     }
 
     drawArrow(handler, x, y) {
+        const m = this.gc.measureText('>');
         if (this.pressedButton === handler) {
             this.gc.setFillColor(this.gc.color16(32, 35, 51));
-            this.gc.fillRoundRect(x - 6, y - 6, 10, 11, 1);
+            this.gc.fillRoundRect(x - 4 - m.width / 2, y - 4 - m.height / 2, m.width + 8, m.height + 8, 1);
         }
         const textColor =
             this.pressedButton === handler
                 ? this.gc.color16(255, 255, 255)
                 : utils.convertStringToColor16(constants.COLOR[5]);
         this.gc.setFontColor(textColor);
-        this.gc.drawText(x - 2, y - 3, '>');
+        this.gc.drawText(x - m.width / 2, y - m.height / 2, '>');
     }
 
     drawSelectPopup() {
@@ -1068,9 +1123,9 @@ class GameScene extends Gamejoy {
 
         this.gc.setFontColor(this.gc.color16(255, 255, 255));
         const m = this.gc.measureText(this.dreamTitle);
-        this.gc.drawText((this.screenWidth - m.width) / 2, this.screenHeight - 36, this.dreamTitle);
+        this.gc.drawText((this.screenWidth - m.width) / 2, this.screenHeight - 36 - m.height / 2, this.dreamTitle);
         this.gc.setFontColor(this.gc.color16(255, 255, 255));
-        this.drawArrow(Input.L, this.screenWidth - 16, this.screenHeight - 36);
+        this.drawArrow(Input.L, (this.screenWidth + m.width) / 2 + 8, this.screenHeight - 36);
         this.drawButton(Input.C, 'DREAM START', this.screenWidth / 2, this.screenHeight - 16);
     }
 
