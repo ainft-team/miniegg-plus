@@ -37,7 +37,7 @@ FILE_PATH=<file_path> npm run build
 
 ### Upload scripts
 ```
-sh upload.sh {local|dev|prod} [<filePath>]
+sh scripts/upload.sh {local|dev|prod} [<filePath>]
 ```
 
 ### Reset / set Wi-Fi
