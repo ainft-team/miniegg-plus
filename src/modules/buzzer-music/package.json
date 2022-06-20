@@ -1,0 +1,7 @@
+{
+  "name": "buzzer-music",
+  "description": "",
+  "bundle": {
+    "mode": "development"
+  }
+}

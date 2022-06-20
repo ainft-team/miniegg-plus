@@ -1,0 +1,16 @@
+{
+  "name": "st7735",
+  "description": "",
+  "main": "index.js",
+  "entry": [
+    "ex_144.js",
+    "ex_18.js"
+  ],
+  "bundle": {
+    "mode": "production"
+  },
+  "dependencies": {
+    "@niklauslee/font-lee-sans": "1.0.0",
+    "@kaluma/logo-mono": "1.0.0"
+  }
+}
